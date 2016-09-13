@@ -2,6 +2,7 @@
 import SocketServer
 import os
 from urllib2 import HTTPError
+import mimetypes
 
 # Copyright 2013 Abram Hindle, Eddie Antonio Santos
 # 
@@ -33,32 +34,30 @@ class MyWebServer(SocketServer.BaseRequestHandler):
     
     base_URL = "http://127.0.0.1:8080/"    
     
-    def check_valid_page(self, path):
+    def check_available_pages(self, path, base_directory):
         files_in_directory = ['/']
-        for root, dirs, files in os.walk("./www", topdown=False):
+        for root, dirs, files in os.walk(base_directory, topdown=False):
             for name in files:
                 if(name[0] != "."):
                     files_in_directory.append(root[5:]+"/"+name)
         #print("Hey homie got yo files." + " ".join(files_in_directory))
         return path in files_in_directory
-        
-    
-    def determine_returned_page(self,request_page):
-        #print("This is yo request_page foo! " + request_page)
-        if request_page == "/":
-            index_html = open('www/index.html','r')
-            page = index_html.read()
-            #print(page)
-        elif request_page == "/deep/index.html":
-            deep_html = open('www/deep/index.html','r')
-            page = deep_html.read()
-        else:
-            page = "OK!"
-        self.request.sendall(page)
 
-    def build_response_header(self, status_code):
-        protocol = "HTTP/1.x"
+    def send_ok_response(self, path):
+        print("I made it to sendok response")
+        file_type = mimetypes.guess_type(path)[0]
+        index = "index.html"
+        if (file_type == None and self.check_available_pages(index,"."+ path)):
+            print("I found the dir, dir, dir , dir.")
+            file = open(path+index,'r')
+            self.request.sendall(self.build_response_header(200,"Found"))
+            self.request.sendall(file.read())
+        else:
+            self.request.sendall(self.build_response_header(200, "Not Found"))
         return
+
+    def build_response_header(self, status_code, message):
+        return "HTTP/1.1 " + str(status_code) + " "+ message
 
     def throw_404(self, path, response_header):
         raise HTTPError(self.base_URL + path, 404, "404 Not FOUND!", response_header, None)
@@ -71,11 +70,12 @@ class MyWebServer(SocketServer.BaseRequestHandler):
         requester = divided_data[4]
         host = divided_data[6]
         accept = divided_data[8]
-        if self.check_valid_page(path):
-            self.determine_returned_page(path)
+        if self.check_available_pages(path, "./www"):
+             self.send_ok_response(path)              
         else:
-            self.throw_404(path, "BLAH")
-
+            header = self.build_reponse_header(404, "Not Found")
+            self.request.sendall(header)
+            self.throw_404(path, header)
     
     
     def handle(self):
