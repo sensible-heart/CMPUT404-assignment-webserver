@@ -1,6 +1,7 @@
 #  coding: utf-8 
 import SocketServer
 import os
+from urllib2 import HTTPError
 
 # Copyright 2013 Abram Hindle, Eddie Antonio Santos
 # 
@@ -29,18 +30,21 @@ import os
 
 
 class MyWebServer(SocketServer.BaseRequestHandler):
+    
+    base_URL = "http://127.0.0.1:8080/"    
+    
     def check_valid_page(self, path):
         files_in_directory = ['/']
         for root, dirs, files in os.walk("./www", topdown=False):
             for name in files:
                 if(name[0] != "."):
                     files_in_directory.append(root[5:]+"/"+name)
-        print("Hey homie got yo files." + " ".join(files_in_directory))
+        #print("Hey homie got yo files." + " ".join(files_in_directory))
         return path in files_in_directory
         
     
     def determine_returned_page(self,request_page):
-        print("This is yo request_page foo! " + request_page)
+        #print("This is yo request_page foo! " + request_page)
         if request_page == "/":
             index_html = open('www/index.html','r')
             page = index_html.read()
@@ -51,6 +55,13 @@ class MyWebServer(SocketServer.BaseRequestHandler):
         else:
             page = "OK!"
         self.request.sendall(page)
+
+    def build_response_header(self, status_code):
+        protocol = "HTTP/1.x"
+        return
+
+    def throw_404(self, path, response_header):
+        raise HTTPError(self.base_URL + path, 404, "404 Not FOUND!", response_header, None)
     
     def parse_request(self,data):
         divided_data = self.data.split()
@@ -60,8 +71,12 @@ class MyWebServer(SocketServer.BaseRequestHandler):
         requester = divided_data[4]
         host = divided_data[6]
         accept = divided_data[8]
-        print("I have your page!" + str(self.check_valid_page(path)))
-        self.determine_returned_page(path)
+        if self.check_valid_page(path):
+            self.determine_returned_page(path)
+        else:
+            self.throw_404(path, "BLAH")
+
+    
     
     def handle(self):
         self.data = self.request.recv(1024).strip()
