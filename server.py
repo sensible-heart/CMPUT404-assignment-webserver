@@ -1,5 +1,6 @@
 #  coding: utf-8 
 import SocketServer
+import os
 
 # Copyright 2013 Abram Hindle, Eddie Antonio Santos
 # 
@@ -28,6 +29,16 @@ import SocketServer
 
 
 class MyWebServer(SocketServer.BaseRequestHandler):
+    def check_valid_page(self, path):
+        files_in_directory = ['/']
+        for root, dirs, files in os.walk("./www", topdown=False):
+            for name in files:
+                if(name[0] != "."):
+                    files_in_directory.append(root[5:]+"/"+name)
+        print("Hey homie got yo files." + " ".join(files_in_directory))
+        return path in files_in_directory
+        
+    
     def determine_returned_page(self,request_page):
         print("This is yo request_page foo! " + request_page)
         if request_page == "/":
@@ -37,17 +48,20 @@ class MyWebServer(SocketServer.BaseRequestHandler):
         elif request_page == "/deep/index.html":
             deep_html = open('www/deep/index.html','r')
             page = deep_html.read()
+        else:
+            page = "OK!"
         self.request.sendall(page)
     
     def parse_request(self,data):
         divided_data = self.data.split()
         http_method = divided_data[0]
-        http_request_page = divided_data[1]
+        path = divided_data[1]
         http_protocol = divided_data[2]
         requester = divided_data[4]
         host = divided_data[6]
         accept = divided_data[8]
-        self.determine_returned_page(http_request_page)
+        print("I have your page!" + str(self.check_valid_page(path)))
+        self.determine_returned_page(path)
     
     def handle(self):
         self.data = self.request.recv(1024).strip()
