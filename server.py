@@ -34,7 +34,10 @@ class MyWebServer(SocketServer.BaseRequestHandler):
             index_html = open('www/index.html','r')
             page = index_html.read()
             #print(page)
-            self.request.sendall(page)
+        elif request_page == "/deep/index.html":
+            deep_html = open('www/deep/index.html','r')
+            page = deep_html.read()
+        self.request.sendall(page)
     
     def parse_request(self,data):
         divided_data = self.data.split()
