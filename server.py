@@ -57,7 +57,7 @@ class MyWebServer(SocketServer.BaseRequestHandler):
         return
 
     def build_response_header(self, status_code, message):
-        return "HTTP/1.1 " + str(status_code) + " "+ message
+        return "HTTP/1.1 " + str(status_code) + " "+ message + "\r\n\r\n"
 
     def throw_404(self, path, response_header):
         raise HTTPError(self.base_URL + path, 404, "404 Not FOUND!", response_header, None)
