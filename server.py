@@ -1,7 +1,6 @@
 #  coding: utf-8 
 import SocketServer
 import os
-from urllib2 import HTTPError
 import mimetypes
 
 # Copyright 2013 Abram Hindle, Eddie Antonio Santos
@@ -55,9 +54,6 @@ class MyWebServer(SocketServer.BaseRequestHandler):
     def build_response_header(self, status_code, message):
         return "HTTP/1.1 " + str(status_code) + " "+ message + "\r\n\r\n"
 
-    def throw_404(self, path, response_header):
-        raise HTTPError(self.base_URL + path, 404, "404 Not FOUND!", response_header, None)
-    
     def parse_request(self,data):
         divided_data = self.data.split()
         http_method = divided_data[0]
@@ -66,12 +62,12 @@ class MyWebServer(SocketServer.BaseRequestHandler):
         requester = divided_data[4]
         host = divided_data[6]
         accept = divided_data[8]
+        # Check path to make sure there are no preceeding dots
         if self.check_available_pages(path, "./www"):
              self.send_ok_response(path)              
         else:
             header = self.build_response_header(404, "Not Found")
             self.request.sendall(header)
-            self.throw_404(path, header)
     
     def handle(self):
         self.data = self.request.recv(1024).strip()
