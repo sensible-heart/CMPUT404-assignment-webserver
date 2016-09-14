@@ -40,21 +40,17 @@ class MyWebServer(SocketServer.BaseRequestHandler):
             for name in files:
                 if(name[0] != "."):
                     files_in_directory.append(root[5:]+"/"+name)
-        #print("Hey homie got yo files." + " ".join(files_in_directory))
         return path in files_in_directory
 
     def send_ok_response(self, path):
-        print("I made it to sendok response")
         file_type = mimetypes.guess_type(path)[0]
         index = "index.html"
         if (file_type == None and self.check_available_pages(index,"."+ path)):
-            print("I found the dir, dir, dir , dir.")
             file = open(path+index,'r')
             self.request.sendall(self.build_response_header(200,"Found"))
             self.request.sendall(file.read())
         else:
             self.request.sendall(self.build_response_header(200, "Not Found"))
-        return
 
     def build_response_header(self, status_code, message):
         return "HTTP/1.1 " + str(status_code) + " "+ message + "\r\n\r\n"
@@ -73,18 +69,16 @@ class MyWebServer(SocketServer.BaseRequestHandler):
         if self.check_available_pages(path, "./www"):
              self.send_ok_response(path)              
         else:
-            header = self.build_reponse_header(404, "Not Found")
+            header = self.build_response_header(404, "Not Found")
             self.request.sendall(header)
             self.throw_404(path, header)
-    
     
     def handle(self):
         self.data = self.request.recv(1024).strip()
         print ("Got a request of: %s\n" % self.data)
-        #self.request.sendall("OK")
         self.parse_request(self.data)
-            
-            
+
+
 
 if __name__ == "__main__":
     HOST, PORT = "localhost", 8080
@@ -92,7 +86,6 @@ if __name__ == "__main__":
     SocketServer.TCPServer.allow_reuse_address = True
     # Create the server, binding to localhost on port 8080
     server = SocketServer.TCPServer((HOST, PORT), MyWebServer)
-
     # Activate the server; this will keep running until you
     # interrupt the program with Ctrl-C
     server.serve_forever()
