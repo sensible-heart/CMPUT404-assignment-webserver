@@ -25,4 +25,5 @@ compatible) http://docs.python.org/2/library/socketserver.html
 
 https://www.tutorialspoint.com/python/os_walk.htm
 
+
 http://stackoverflow.com/questions/13454164/os-walk-without-hidden-folders - Martijn Pieters
