@@ -49,24 +49,26 @@ class MyWebServer(SocketServer.BaseRequestHandler):
             content_line = "content-type: " + mimetype + "; charset=utf-8"
         return content_line
 
-    def get_mime_type(self, path, index):
+    def get_mime_type(self, full_path, index):
         path_to_check = ""
-        if (self.index_exists("./www"+path, index)):
-            path_to_check = path+index
+        if (self.index_exists(full_path, index)):
+            path_to_check = full_path+index
         else:
-            path_to_check = path
+            path_to_check = full_path
         return mimetypes.guess_type(path_to_check)[0]
 
     def send_ok_response(self, path):
         index = "index.html"
-        file_type = self.get_mime_type(path, index)
-        
+        full_path = "./www"+path
+        if (not path.endswith(index) and path.endswith("/")):
+            full_path += index
+        file_type = self.get_mime_type(full_path, index)
         if (file_type == None and self.check_available_pages(index,"."+ path)):
-            file = open(path+index,'r')
             self.request.sendall(self.build_response_header(200,"Found", self.build_content_line(file_type)))
-            self.request.sendall(file.read())
         else:
             self.request.sendall(self.build_response_header(200, "Not Found", self.build_content_line(file_type)))
+        file_to_display = open(full_path,'r')
+        self.request.sendall(file_to_display.read())
 
     def build_response_header(self, status_code, message, content_type_line):
         if(content_type_line != ""):
