@@ -31,11 +31,10 @@ import mimetypes
 
 class MyWebServer(SocketServer.BaseRequestHandler):
     
-    base_URL = "http://127.0.0.1:8080/"    
-    
     def check_available_pages(self, path, base_directory):
         files_in_directory = ['/']
         for root, dirs, files in os.walk(base_directory, topdown=False):
+            files_in_directory.append(root[5:] + "/")
             for name in files:
                 if(name[0] != "."):
                     files_in_directory.append(root[5:]+"/"+name)
@@ -50,6 +49,10 @@ class MyWebServer(SocketServer.BaseRequestHandler):
     def send_ok_response(self, path):
         file_type = mimetypes.guess_type(path)[0]
         index = "index.html"
+        
+        print "This is yo file_type: " + str(file_type)
+        print "This is if your page is available " + str(self.check_available_pages(index,"."+ path))
+
         if (file_type == None and self.check_available_pages(index,"."+ path)):
             file = open(path+index,'r')
             self.request.sendall(self.build_response_header(200,"Found", self.build_content_line(file_type)))
