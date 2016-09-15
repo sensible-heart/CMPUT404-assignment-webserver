@@ -32,6 +32,8 @@ import mimetypes
 class MyWebServer(SocketServer.BaseRequestHandler):
     
     def check_available_pages(self, path, base_directory):
+        print "path: "+path
+        print "base dir: "+base_directory
         files_in_directory = ['/']
         for root, dirs, files in os.walk(base_directory, topdown=False):
             files_in_directory.append(root[5:] + "/")
@@ -40,6 +42,13 @@ class MyWebServer(SocketServer.BaseRequestHandler):
                     files_in_directory.append(root[5:]+"/"+name)
         return path in files_in_directory
 
+    def get_mimetype(self, index_file, path):
+        mimetype = None
+        print "!!!! Path in Mimetype !!!!!!"+path
+        if (self.check_available_pages(index_file, path)):
+            mimetype = mimetypes.guess_type(index_file)[0]
+        return mimetype
+            
     def build_content_line(self, mimetype):
         content_line = ""
         if (mimetype != None):
@@ -47,13 +56,12 @@ class MyWebServer(SocketServer.BaseRequestHandler):
         return content_line
 
     def send_ok_response(self, path):
-        file_type = mimetypes.guess_type(path)[0]
         index = "index.html"
+        file_type = self.get_mimetype(index, "./www" + path)
         
         print "This is yo file_type: " + str(file_type)
-        print "This is if your page is available " + str(self.check_available_pages(index,"."+ path))
 
-        if (file_type == None and self.check_available_pages(index,"."+ path)):
+        if (file_type == None):
             file = open(path+index,'r')
             self.request.sendall(self.build_response_header(200,"Found", self.build_content_line(file_type)))
             self.request.sendall(file.read())
