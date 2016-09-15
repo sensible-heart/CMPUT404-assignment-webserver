@@ -41,18 +41,26 @@ class MyWebServer(SocketServer.BaseRequestHandler):
                     files_in_directory.append(root[5:]+"/"+name)
         return path in files_in_directory
 
+    def build_content_line(self, mimetype):
+        content_line = ""
+        if (mimetype != None):
+            content_line = "content-type: " + mimetype + "; charset=utf-8"
+        return content_line
+
     def send_ok_response(self, path):
         file_type = mimetypes.guess_type(path)[0]
         index = "index.html"
         if (file_type == None and self.check_available_pages(index,"."+ path)):
             file = open(path+index,'r')
-            self.request.sendall(self.build_response_header(200,"Found"))
+            self.request.sendall(self.build_response_header(200,"Found", self.build_content_line(file_type)))
             self.request.sendall(file.read())
         else:
-            self.request.sendall(self.build_response_header(200, "Not Found"))
+            self.request.sendall(self.build_response_header(200, "Not Found", self.build_content_line(file_type)))
 
-    def build_response_header(self, status_code, message):
-        return "HTTP/1.1 " + str(status_code) + " "+ message + "\r\n\r\n"
+    def build_response_header(self, status_code, message, content_type_line):
+        if(content_type_line != ""):
+            content_type_line = "\r\n" + content_type_line
+        return "HTTP/1.1 " + str(status_code) + " "+ message + content_type_line + "\r\n\r\n"
 
     def parse_request(self,data):
         divided_data = self.data.split()
@@ -66,7 +74,7 @@ class MyWebServer(SocketServer.BaseRequestHandler):
         if self.check_available_pages(path, "./www"):
              self.send_ok_response(path)              
         else:
-            header = self.build_response_header(404, "Not Found")
+            header = self.build_response_header(404, "Not Found", "")
             self.request.sendall(header)
     
     def handle(self):
