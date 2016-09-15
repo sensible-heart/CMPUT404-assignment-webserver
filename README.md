@@ -18,12 +18,16 @@ server.py contains contributions from:
 * Eddie Antonio Santos
 * Alex Makepeace
 * Wyatt Fleming
+
 But the server.py example is derived from the python documentation
 examples thus some of the code is Copyright © 2001-2013 Python
 Software Foundation; All Rights Reserved under the PSF license (GPL
 compatible) http://docs.python.org/2/library/socketserver.html
 
-https://www.tutorialspoint.com/python/os_walk.htm
+Sources
+=======
+Author: Tutorials Point
+Source: https://www.tutorialspoint.com/python/os_walk.htm
 
-
-http://stackoverflow.com/questions/13454164/os-walk-without-hidden-folders - Martijn Pieters
+Author: Martijn Pieters
+Source: http://stackoverflow.com/questions/13454164/os-walk-without-hidden-folders
