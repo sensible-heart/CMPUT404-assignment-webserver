@@ -40,19 +40,27 @@ class MyWebServer(SocketServer.BaseRequestHandler):
                     files_in_directory.append(root[5:]+"/"+name)
         return path in files_in_directory
 
+    def index_exists(self, directory, index):
+        return os.path.isfile(directory+index)
+
     def build_content_line(self, mimetype):
         content_line = ""
         if (mimetype != None):
             content_line = "content-type: " + mimetype + "; charset=utf-8"
         return content_line
 
-    def send_ok_response(self, path):
-        file_type = mimetypes.guess_type(path)[0]
-        index = "index.html"
-        
-        print "This is yo file_type: " + str(file_type)
-        print "This is if your page is available " + str(self.check_available_pages(index,"."+ path))
+    def get_mime_type(self, path, index):
+        path_to_check = ""
+        if (self.index_exists("./www"+path, index)):
+            path_to_check = path+index
+        else:
+            path_to_check = path
+        return mimetypes.guess_type(path_to_check)[0]
 
+    def send_ok_response(self, path):
+        index = "index.html"
+        file_type = self.get_mime_type(path, index)
+        
         if (file_type == None and self.check_available_pages(index,"."+ path)):
             file = open(path+index,'r')
             self.request.sendall(self.build_response_header(200,"Found", self.build_content_line(file_type)))
